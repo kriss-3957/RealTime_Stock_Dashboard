@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TradingViewChart</title>
+</head>
+<body>
+    <h1 style="text-align: center;">Trading View Chart</h1>
+
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container" style="height:100%;width:100%">
+        <div id="tradingview_27a63" style="width: 70%; height: 800px; margin-left: auto; margin-right: auto;"></div>
+        <div class="tradingview-widget-copyright">
+            <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+                <span class="blue-text">Track all markets on TradingView</span>
+            </a>
+        </div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+            // Create a TradingView widget with initial settings
+            var widget = new TradingView.widget({
+                "autosize": true,
+                "symbol": "AAPL",
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "watchlist":{{data | safe}},
+                "container_id": "tradingview_27a63"
+            });
+
+            // Connect to Alpaca WebSocket for real-time updates
+            var socket = new WebSocket("wss://stream.data.alpaca.markets/v2/sip");
+
+            socket.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+
+                // Check if the message is a trade update
+                if (data.stream == "trade_updates") {
+                    var symbol = data.data.T;
+                    var last_price = data.data.c;
+
+                    // Update the TradingView widget with the latest symbol and last price
+                    widget.chart().setSymbol(symbol);
+                    widget.chart().createStudy('Last Price', false, true, [last_price]);
+                }
+            };
+        </script>
+    </div>
+    <!-- TradingView Widget END -->
+</body>
+</html>
